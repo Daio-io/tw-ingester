@@ -1,0 +1,7 @@
+#ide
+.idea
+
+# Node
+node_modules
+*.log
+*.logs
