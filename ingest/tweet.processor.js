@@ -4,16 +4,18 @@ var tweetStream = require('./twitter.stream');
 var nounExtract = require('../lib/noun.extractor');
 var TwModel = require('../model/tw.model');
 
+module.exports = function () {
 
+    tweetStream.track(['David Cameron', 'Ed Miliband', 'Nigel Farage', 'Nick Clegg']);
 
-tweetStream.track(['David Cameron', 'Ed Miliband', 'Nigel Farage', 'Nick Clegg']);
+    tweetStream.on('tweet', function (tweet) {
 
-tweetStream.on('tweet', function (tweet) {
+        console.log(tweet.text);
+        saveTweet(tweet.text);
 
-    saveTweet(tweet);
+    });
 
-});
-
+}
 
 
 String.prototype.replaceAt = function (index, char) {
@@ -23,36 +25,45 @@ String.prototype.replaceAt = function (index, char) {
 
 function saveTweet(tweet) {
 
-    var wordToRemove = getNounFromTweet(tweet);
+    getNounFromTweet(tweet, function (wordToRemove) {
 
-    if (wordToRemove) {
+        if (wordToRemove.length > 0) {
+            var tweetToSave = removeWordFromTweet(tweet, wordToRemove);
 
-        var tweetToSave = removeWordFromTweet(tweet, wordToRemove);
+            var Tw = new TwModel({
 
-        var Tw = new TwModel({
+                tweet: tweetToSave,
+                removedWord: wordToRemove,
+                wordLength: wordToRemove.length,
+                createdAt: new Date()
 
-            tweet: tweetToSave,
-            removedWord: wordToRemove,
-            wordLength: wordToRemove.length,
-            createdAt: new Date()
+            }).save(function (err) {
 
-        }).save();
-    }
+                    if (err) {
+                        console.log('there was an error', err);
+                    }
+
+                });
+        }
+
+    });
+
 
 }
 
-function getNounFromTweet(tweetText) {
+function getNounFromTweet(tweetText, callback) {
 
     nounExtract(tweetText, function (data) {
 
         if (data) {
 
             var index = Math.floor(Math.random() * (data.length));
-            return data[index];
+            console.log('Noun to remove found: ', data[index]);
+            callback(data[index]);
 
         }
 
-        return '';
+        return callback('');
 
     });
 
@@ -68,6 +79,7 @@ function removeWordFromTweet(tweet, wordToRemove) {
 
     }
 
+    console.log('Noun removed from tweet. returning: ', tweet);
     return tweet;
 
 }
