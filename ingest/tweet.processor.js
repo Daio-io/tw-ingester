@@ -11,7 +11,7 @@ module.exports = function () {
     tweetStream.on('tweet', function (tweet) {
 
         console.log(tweet.text);
-        saveTweet(tweet.text);
+        saveTweet(tweet);
 
     });
 
@@ -25,17 +25,19 @@ String.prototype.replaceAt = function (index, char) {
 
 function saveTweet(tweet) {
 
-    getNounFromTweet(tweet, function (wordToRemove) {
+    getNounFromTweet(tweet.text, function (wordToRemove) {
 
         if (wordToRemove.length > 0) {
-            var tweetToSave = removeWordFromTweet(tweet, wordToRemove);
+            var tweetToSave = removeWordFromTweet(tweet.text, wordToRemove);
 
             var Tw = new TwModel({
 
                 tweet: tweetToSave,
                 removedWord: wordToRemove,
                 wordLength: wordToRemove.length,
-                createdAt: new Date()
+                createdAt: new Date(),
+                userName: tweet.user.screen_name,
+                userImg: tweet.user.profile_image_url
 
             }).save(function (err) {
 

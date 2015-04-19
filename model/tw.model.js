@@ -7,7 +7,9 @@ var TwModel = mongoose.model('Tw', {
     tweet: String,
     removedWord: String,
     wordLength: Number,
-    createdAt: Date
+    createdAt: Date,
+    userName: String,
+    userImg: String
 
 });
 
